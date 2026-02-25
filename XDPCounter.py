@@ -1,7 +1,7 @@
 from bcc import BPF
 import time
 
-INTERFACE = "enp0s3"
+INTERFACE = "enp0s1"
 INTERVAL = 1
 
 BPF_PROGRAM = """
@@ -18,7 +18,8 @@ int count_packets(struct xdp_md *context) {
 
 def loadBPF(interface):
     b = BPF(text=BPF_PROGRAM)
-    b.attach_xdp(interface, b.load_func("count_packets", BPF.XDP)) # attach the XDP to the network
+    b.attach_kprobe(event=b.get_syscall_fnname("sendto"), fn_name="count_packets")
+    b.attach_kprobe(event=b.get_syscall_fnname("recvfrom"), fn_name="count_packets") 
     return b
 
 def packetCount(bpf, interface):
