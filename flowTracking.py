@@ -61,17 +61,15 @@ def main():
     b = BPF(text=BPF_PROGRAM)
     b.attach_kprobe(event="tcp_sendmsg", fn_name="trace_tcp_send")
     
-    # Column headers for Person 2's Report
     header = f"{'Source IP':<15} {'Dest IP':<15} {'DPort':<6} {'Pkts':<6} {'Bytes':<10} {'Duration (ms)':<15}"
     print(header)
     print("-" * len(header))
 
     try:
         while True:
-            time.sleep(2)
+            time.sleep(1)
             flows = b.get_table("flow_table")
             for key, val in flows.items():
-                # Calculate duration in milliseconds for ML feature engineering
                 duration_ms = (val.last_ns - val.start_ns) / 1000000
                 
                 print(f"{format_ip(key.saddr):<15} "
