@@ -13,7 +13,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix
 import joblib
 
-# 1. Load the data captured by Mikhail
+# Load the data captured by Mikhail
 print("Loading eBPF captured traffic...")
 normal_df = pd.read_csv('normal_traffic_20260304_202911.csv')
 attack_df = pd.read_csv('attack_traffic_20260304_205530.csv')
@@ -21,14 +21,14 @@ attack_df = pd.read_csv('attack_traffic_20260304_205530.csv')
 # Combine into one dataset
 df = pd.concat([normal_df, attack_df], ignore_index=True)
 
-# 2. Preprocessing & Feature Engineering
+# Preprocessing & Feature Engineering
 def preprocess_ebpf_data(data):
     # Calculate time between packets (time delta)
     data['timestamp'] = pd.to_numeric(data['timestamp'])
     data = data.sort_values('timestamp')
     data['time_delta'] = data['timestamp'].diff().fillna(0)
     
-    # Drop raw identifiers (IPs/Timestamps) to ensure the SVM learns behavior, not addresses. This is common practice when using SVM after time time delta has been calculated.
+    # Drop raw identifiers that are no longer necessary
     features = data.drop(['timestamp', 'src_ip', 'dst_ip'], axis=1)
     
     le = LabelEncoder()
@@ -42,26 +42,21 @@ processed_df, proto_encoder = preprocess_ebpf_data(df)
 X = processed_df.drop('label', axis=1)
 y = processed_df['label']
 
-# 3. Train/Test Split
+# Train/Test Split (80/20)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# 4. Scaling
+# Scaling
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-# 5. Train the SVM
+# Training the SVM
 print("Training SVM on eBPF data... (this might take a moment)")
 svm_model = SVC(kernel='rbf', C=1.0)
 svm_model.fit(X_train_scaled, y_train)
 
-# 6. Final Results
+# Final Results
 y_pred = svm_model.predict(X_test_scaled)
 
-print("\n--- FINAL CAPSTONE PERFORMANCE REPORT ---")
+print("\n--- FINAL PERFORMANCE REPORT ---")
 print(classification_report(y_test, y_pred))
-
-# 7. Save for use by Hunter
-joblib.dump(svm_model, 'svm_model.pkl')
-joblib.dump(scaler, 'scaler.pkl')
-print("\nFiles 'svm_model.pkl' and 'scaler.pkl' saved for the comparison write-up.")
