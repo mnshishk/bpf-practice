@@ -1,6 +1,8 @@
+# run with: "python3 SVM.py"
 import sys
 import os
 
+# fix for ModuleNotFoundError
 user_pkg_path = os.path.expanduser('~/.local/lib/python3.10/site-packages')
 if user_pkg_path not in sys.path:
     sys.path.insert(0, user_pkg_path)
@@ -13,7 +15,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import classification_report, confusion_matrix
 import joblib
 
-# Load the data captured by Mikhail
+# Load the data captured by Mike
 print("Loading eBPF captured traffic...")
 normal_df = pd.read_csv('normal_traffic_20260304_202911.csv')
 attack_df = pd.read_csv('attack_traffic_20260304_205530.csv')
