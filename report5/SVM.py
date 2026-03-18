@@ -53,7 +53,7 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # Training the SVM
-print("Training SVM on eBPF data... (this might take a moment)")
+print("Training SVM on eBPF data...")
 svm_model = SVC(kernel='rbf', C=1.0)
 svm_model.fit(X_train_scaled, y_train)
 
@@ -64,17 +64,13 @@ print("\n--- FINAL PERFORMANCE REPORT ---")
 print(classification_report(y_test, y_pred))
 
 # saving the trained model, scaler, and encoder
-print("\nSaving models to disk...")
+print("\nSaving models")
 joblib.dump(svm_model, 'svm_model.pkl')
 joblib.dump(scaler, 'svm_scaler.pkl')
 joblib.dump(proto_encoder, 'svm_encoder.pkl')
 print("Files saved: svm_model.pkl, svm_scaler.pkl, svm_encoder.pkl")
 
 def predict(flow: dict) -> int:
-    """
-    Takes a dictionary representing a single network flow and returns 
-    the predicted class (0 for normal, 1 for attack).
-    """
     input_df = pd.DataFrame([flow])
     
     if 'time_delta' not in input_df.columns:
