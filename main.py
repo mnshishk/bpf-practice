@@ -43,7 +43,10 @@ def runIDS(bpf):
                     if normal_sample_count % 10 == 0:
                         normal_msg = (
                             f"[{datetime.now().strftime('%H:%M:%S')}] NORMAL | " 
-                            f"src={flow['src_ip']}:{flow['src_port']} dst={flow['dst_ip']}:{flow['dst_port']} bytes={flow['total_bytes']}"
+                            f"src={flow['src_ip']}:{flow['src_port']} | "
+                            f"dst={flow['dst_ip']}:{flow['dst_port']} | "
+                            f"SVM={svm_result} RF={rf_result} | "
+                            f"bytes={flow['total_bytes']}"
                         )
                         log_normal(normal_msg)
                     print(f"[{datetime.now().strftime('%H:%M:%S')}] OK | "
