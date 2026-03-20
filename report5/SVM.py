@@ -16,8 +16,8 @@ if user_pkg_path not in sys.path:
 
 # Load the data captured by Mike
 print("Loading eBPF captured traffic...")
-normal_df = pd.read_csv('normal_traffic_20260304_202911.csv')
-attack_df = pd.read_csv('attack_traffic_20260304_205530.csv')
+normal_df = pd.read_csv('report5/normal_traffic_20260304_202911.csv')
+attack_df = pd.read_csv('report5/attack_traffic_20260304_205530.csv')
 
 # Combine into one dataset
 df = pd.concat([normal_df, attack_df], ignore_index=True)
@@ -65,9 +65,9 @@ print(classification_report(y_test, y_pred))
 
 # saving the trained model, scaler, and encoder
 print("\nSaving models")
-joblib.dump(svm_model, 'svm_model.pkl')
-joblib.dump(scaler, 'svm_scaler.pkl')
-joblib.dump(proto_encoder, 'svm_encoder.pkl')
+joblib.dump(svm_model, 'report5/svm_model.pkl')
+joblib.dump(scaler, 'report5/svm_scaler.pkl')
+joblib.dump(proto_encoder, 'report5/svm_encoder.pkl')
 print("Files saved: svm_model.pkl, svm_scaler.pkl, svm_encoder.pkl")
 
 def predict(flow: dict) -> int:
@@ -78,7 +78,7 @@ def predict(flow: dict) -> int:
     
     input_df['protocol'] = proto_encoder.transform(input_df['protocol'].astype(str))
     
-    feature_cols = ['src_port', 'dst_port', 'protocol', 'length', 'time_delta']
+    feature_cols = ['src_port', 'dst_port', 'packet_count', 'total_bytes', 'duration_ms', 'protocol', 'time_delta']
     input_data = input_df[feature_cols]
     
     # Scale the data
