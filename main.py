@@ -3,9 +3,10 @@ import time
 from report4.flow_capture import loadBPF, attachKProbe, getFlows
 from report5.SVM import predict as svm_predict
 from report5.RF import predict as rf_predict
+from report6.ensemble import evaluate_threat_level
 
-ALERT_LOG = f"report5/alerts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-NORMAL_LOG = f"report5/normal_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+ALERT_LOG = f"report6/alerts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+NORMAL_LOG = f"report6/normal_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 SLEEP = 2
 
 def log_alert(message):
@@ -30,7 +31,9 @@ def runIDS(bpf):
                 svm_result = svm_predict(flow)
                 rf_result = rf_predict(flow)
 
-                if svm_result == 1 or rf_result == 1:
+                threat_level = evaluate_threat_level(svm_result, rf_result)
+
+                if threat_level != "NORMAL":
                     alert_msg = (
                         f"[{datetime.now().strftime('%H:%M:%S')}] Suspicious Traffic | "
                         f"src={flow['src_ip']}:{flow['src_port']} "
@@ -59,7 +62,6 @@ def main() -> None:
     bpf = loadBPF()
     attachKProbe(bpf)
     runIDS(bpf)
-
 
 if __name__ == "__main__":
     main()
