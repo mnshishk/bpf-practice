@@ -5,10 +5,13 @@ from report5.SVM import predict as svm_predict
 from report5.RF import predict as rf_predict
 from report6.ensemble import evaluate_threat_level
 from report6.analytics import log_attack_pattern, print_summary, export_summary_to_csv
+from report6.IP_blocking import IP_blocking
 
 ALERT_LOG = f"report6/alerts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 NORMAL_LOG = f"report6/normal_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 SLEEP = 2
+
+defender = IP_blocking(threshold=5,)
 
 def log_alert(message):
     print(message)
@@ -26,6 +29,7 @@ def runIDS(bpf):
     try:
         while True:
             time.sleep(SLEEP)
+            defender.cleanup_expired_blocks()
             flows = getFlows(bpf)
 
             for flow in flows:
@@ -35,6 +39,7 @@ def runIDS(bpf):
                 threat_level = evaluate_threat_level(svm_result, rf_result)
 
                 if threat_level != "NORMAL":
+                    defender.process_incident(flow['src_ip'])
                     alert_msg = (
                         f"[{datetime.now().strftime('%H:%M:%S')}] Suspicious Traffic | "
                         f"src={flow['src_ip']}:{flow['src_port']} "
