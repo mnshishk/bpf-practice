@@ -82,16 +82,3 @@ def export_summary_to_csv():
             writer.writerow([port, count])
 
     print(f"\nSummary exported to: {SUMMARY_CSV_FILE}")
-
-
-if __name__ == "__main__":
-    test_flow_1 = {"src_ip": "192.168.1.10", "dst_port": 80}
-    test_flow_2 = {"src_ip": "192.168.1.20", "dst_port": 443}
-    test_flow_3 = {"src_ip": "192.168.1.10", "dst_port": 80}
-
-    log_attack_pattern(test_flow_1, "HIGH")
-    log_attack_pattern(test_flow_2, "MEDIUM")
-    log_attack_pattern(test_flow_3, "HIGH")
-
-    print_summary()
-    export_summary_to_csv()
