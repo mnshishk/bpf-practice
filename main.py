@@ -4,6 +4,7 @@ from report4.flow_capture import loadBPF, attachKProbe, getFlows
 from report5.SVM import predict as svm_predict
 from report5.RF import predict as rf_predict
 from report6.ensemble import evaluate_threat_level
+from report6.analytics import log_attack_pattern, print_summary, export_summary_to_csv
 
 ALERT_LOG = f"report6/alerts_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
 NORMAL_LOG = f"report6/normal_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
@@ -42,6 +43,7 @@ def runIDS(bpf):
                         f"bytes={flow['total_bytes']}"
                     )
                     log_alert(alert_msg)
+                    log_attack_pattern(flow, threat_level)
                 else:
                     if normal_sample_count % 10 == 0:
                         normal_msg = (
@@ -57,6 +59,8 @@ def runIDS(bpf):
     except KeyboardInterrupt:
         print("\nIDS stopped.")
         print(f"Alerts saved to: {ALERT_LOG}")
+        print_summary()
+        export_summary_to_csv()
 
 def main() -> None:
     bpf = loadBPF()
