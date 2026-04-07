@@ -4,8 +4,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report
 
 # Files from Mike's traffic captures
-NORMAL_FILE = "normal_traffic_20260304_202911.csv"
-ATTACK_FILE = "attack_traffic_20260304_205530.csv"
+NORMAL_FILE = "./report4/normal_traffic_20260304_202911.csv"
+ATTACK_FILE = "./report4/attack_traffic_20260304_205530.csv"
 
 print("Loading traffic datasets...")
 
