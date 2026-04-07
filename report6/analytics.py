@@ -31,6 +31,8 @@ def log_attack_pattern(flow: dict, threat_level: str):
             f"[{current_time}] {threat_level} ALERT | "
             f"src_ip={src_ip} | dst_port={dst_port}\n"
         )
+    print(f"[{current_time}] {threat_level} ALERT | "
+          f"src_ip={src_ip} | dst_port={dst_port}\n")
 
 
 def generate_summary():
