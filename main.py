@@ -13,11 +13,6 @@ SLEEP = 2
 
 defender = IP_blocking(threshold=5,)
 
-# def log_alert(message):
-#     print(message)
-#     with open(ALERT_LOG, "a") as f:
-#         f.write(message+"\n")
-
 def log_normal(message):
     print(message)
     with open(NORMAL_LOG, "a") as f:
@@ -40,14 +35,6 @@ def runIDS(bpf):
 
                 if threat_level != "NORMAL":
                     defender.process_incident(flow['src_ip'])
-                    # alert_msg = (
-                    #     f"[{datetime.now().strftime('%H:%M:%S')}] Suspicious Traffic | "
-                    #     f"src={flow['src_ip']}:{flow['src_port']} "
-                    #     f"dst={flow['dst_ip']}:{flow['dst_port']} | "
-                    #     f"SVM={svm_result} RF={rf_result} | "
-                    #     f"bytes={flow['total_bytes']}"
-                    # )
-                    # log_alert(alert_msg)
                     log_attack_pattern(flow, threat_level)
                 else:
                     if normal_sample_count % 10 == 0:
@@ -63,7 +50,6 @@ def runIDS(bpf):
                                 f"src={flow['src_ip']} dst_port={flow['dst_port']}")
     except KeyboardInterrupt:
         print("\nIDS stopped.")
-        # print(f"Alerts saved to: {ALERT_LOG}")
         print_summary()
         export_summary_to_csv()
 
