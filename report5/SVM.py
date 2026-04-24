@@ -16,8 +16,8 @@ if user_pkg_path not in sys.path:
 
 # Load the data captured by Mike
 print("Loading eBPF captured traffic...")
-normal_df = pd.read_csv('report5/normal_traffic_20260304_202911.csv')
-attack_df = pd.read_csv('report5/attack_traffic_20260304_205530.csv')
+normal_df = pd.read_csv('report4/normal_traffic_20260304_202911.csv')
+attack_df = pd.read_csv('report4/attack_traffic_20260304_205530.csv')
 
 # Combine into one dataset
 df = pd.concat([normal_df, attack_df], ignore_index=True)

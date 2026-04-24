@@ -4,52 +4,66 @@ import socket
 import struct
 
 BPF_PROGRAM = """
-#include <uapi/linux/ptrace.h>
-#include <net/sock.h>
-#include <bcc/proto.h>
+#include <uapi/linux/bpf.h>
+#include <linux/if_ether.h>
+#include <linux/ip.h>
+#include <linux/tcp.h>
 
 struct flow_key_t {
     u32 saddr;
     u32 daddr;
-    u16 lport;
+    u16 sport;
     u16 dport;
 };
 
 struct flow_stats_t {
     u64 packet_count;
     u64 total_bytes;
-    u64 start_ns;    // Timestamp when flow started
-    u64 last_ns;     // Timestamp of last activity
 };
 
 BPF_HASH(flow_table, struct flow_key_t, struct flow_stats_t);
 
-int trace_tcp_send(struct pt_regs *ctx, struct sock *sk, struct msghdr *msg, size_t size) {
-    u16 family = sk->__sk_common.skc_family;
-    if (family != AF_INET) return 0;
-
+int xdp_filter(struct xdp_md *ctx) {
+    void *data_end = (void *)(long)ctx->data_end;
+    void *data = (void *)(long)ctx->data;
+    
+    struct ethhdr *eth = data;
+    if ((void *)(eth + 1) > data_end)
+        return XDP_PASS;
+    
+    if (eth->h_proto != htons(ETH_P_IP))
+        return XDP_PASS;
+    
+    struct iphdr *ip = (void *)(eth + 1);
+    if ((void *)(ip + 1) > data_end)
+        return XDP_PASS;
+    
+    if (ip->protocol != IPPROTO_TCP)
+        return XDP_PASS;
+    
+    struct tcphdr *tcp = (void *)ip + (ip->ihl * 4);
+    if ((void *)(tcp + 1) > data_end)
+        return XDP_PASS;
+    
     struct flow_key_t key = {};
-    key.saddr = sk->__sk_common.skc_rcv_saddr;
-    key.daddr = sk->__sk_common.skc_daddr;
-    key.lport = sk->__sk_common.skc_num;
-    key.dport = sk->__sk_common.skc_dport;
-
-    u64 now = bpf_ktime_get_ns();
-    struct flow_stats_t *stats, vars = {};
+    key.saddr = ip->saddr;
+    key.daddr = ip->daddr;
+    key.sport = ntohs(tcp->source);
+    key.dport = ntohs(tcp->dest);
+    
+    struct flow_stats_t *stats, new_stats = {};
     stats = flow_table.lookup(&key);
     
     if (stats) {
         stats->packet_count++;
-        stats->total_bytes += size;
-        stats->last_ns = now;
+        stats->total_bytes += (data_end - data);
     } else {
-        vars.packet_count = 1;
-        vars.total_bytes = size;
-        vars.start_ns = now;
-        vars.last_ns = now;
-        flow_table.update(&key, &vars);
+        new_stats.packet_count = 1;
+        new_stats.total_bytes = (data_end - data);
+        flow_table.update(&key, &new_stats);
     }
-    return 0;
+    
+    return XDP_PASS;
 }
 """
 

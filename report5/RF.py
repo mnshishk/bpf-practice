@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, classification_report
 
-NORMAL_FILE = "report5/normal_traffic_20260304_202911.csv"
-ATTACK_FILE = "report5/attack_traffic_20260304_205530.csv"
+NORMAL_FILE = "report4/normal_traffic_20260304_202911.csv"
+ATTACK_FILE = "report4/attack_traffic_20260304_205530.csv"
 MODEL_FILE = "report5/rf_model.pkl"
 
 FEATURE_COLUMNS = ["src_port", "dst_port", "packet_count", "total_bytes", "duration_ms"]

@@ -1,6 +1,7 @@
 from datetime import datetime
 import time
-from report4.flow_capture import loadBPF, attachKProbe, getFlows
+from report4.flow_capture_XDP import attachXDP
+from report4.flow_capture import loadBPF, getFlows
 from report5.SVM import predict as svm_predict
 from report5.RF import predict as rf_predict
 from report6.ensemble import evaluate_threat_level
@@ -21,10 +22,12 @@ def log_normal(message):
 def runIDS(bpf):
     print(f"IDS is up.\n")
     normal_sample_count = 0
+    
     try:
         while True:
             time.sleep(SLEEP)
             defender.cleanup_expired_blocks()
+            start = time.perf_counter()
             flows = getFlows(bpf)
 
             for flow in flows:
@@ -42,12 +45,15 @@ def runIDS(bpf):
                             f"[{datetime.now().strftime('%H:%M:%S')}] NORMAL | " 
                             f"src={flow['src_ip']}:{flow['src_port']} | "
                             f"dst={flow['dst_ip']}:{flow['dst_port']} | "
-                            f"SVM={svm_result} RF={rf_result} | "
+                            # f"SVM={svm_result} RF={rf_result} | "
                             f"bytes={flow['total_bytes']}"
                         )
                         log_normal(normal_msg)
                         print(f"[{datetime.now().strftime('%H:%M:%S')}] OK | "
                                 f"src={flow['src_ip']} dst_port={flow['dst_port']}")
+
+            end = time.perf_counter()
+            print(f"Processed {len(flows)} flows in {(end-start)*1000:.2f}ms")
     except KeyboardInterrupt:
         print("\nIDS stopped.")
         print_summary()
@@ -55,7 +61,7 @@ def runIDS(bpf):
 
 def main() -> None:
     bpf = loadBPF()
-    attachKProbe(bpf)
+    attachXDP(bpf)
     runIDS(bpf)
 
 if __name__ == "__main__":
